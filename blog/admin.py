@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Tag, Category, Article, CSVFile
+from .models import Tag, Category, Article, ExcelFile
 
-admin.register(Tag)
-admin.register(Category)
-admin.register(Article)
-admin.register(CSVFile)
+admin.site.register(Tag)
+admin.site.register(Category)
+admin.site.register(Article)
+admin.site.register(ExcelFile)

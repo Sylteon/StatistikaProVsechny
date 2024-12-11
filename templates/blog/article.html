@@ -5,19 +5,8 @@
     <div>{{ article.content|safe }}</div>
 
     <h2>Graph</h2>
-    <form method="get" action="">
-        <label for="file">Select CSV File:</label>
-        <select name="file" id="file" onchange="this.form.submit()">
-            <option value="">Select a file</option>
-            {% for file in csv_files %}
-                <option value="{{ file.id }}" {% if file.id|stringformat:"s" == selected_file %}selected{% endif %}>{{ file.name }}</option>
-            {% endfor %}
-        </select>
-    </form>
-
-    {% if selected_file %}
+    {% if article.excel_file %}
         <form method="get" action="">
-            <input type="hidden" name="file" value="{{ selected_file }}">
             <label for="column">Select Column:</label>
             <select name="column" id="column" onchange="this.form.submit()">
                 <option value="">Select a column</option>
@@ -26,9 +15,11 @@
                 {% endfor %}
             </select>
         </form>
-    {% endif %}
 
-    {% if selected_file and selected_column %}
-        <img src="{% url 'blog:plot_graph' %}?file={{ selected_file }}&column={{ selected_column }}" alt="Graph">
+        {% if selected_column %}
+            <img src="{% url 'blog:plot_graph' article.id %}?column={{ selected_column }}" alt="Graph">
+        {% endif %}
+    {% else %}
+        <p>No Excel file associated with this article.</p>
     {% endif %}
 {% endblock %}

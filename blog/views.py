@@ -1,12 +1,12 @@
-from django.shortcuts import render
-from blog.models import Article, Category
+from django.shortcuts import render, get_object_or_404
+from blog.models import Article, Category, ExcelFile
 import pandas as pd
 import matplotlib.pyplot as plt
-from django.conf import settings
-from io import BytesIO
 from django.http import HttpResponse
+from io import BytesIO
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from blog.models import CSVFile
+
+
 # Create your views here.
 
 def index(request):
@@ -20,20 +20,23 @@ def index(request):
     return render(request, 'blog/index.html', {'articles': articles, 'categories': categories, 'category_id': category_id})
 
 def article(request, id):
-    article = Article.objects.get(id=id)
+    article = get_object_or_404(Article, id=id)
     categories = Category.objects.all()
-    csv_files = CSVFile.objects.all()
-    selected_file = request.GET.get('file')
     selected_column = request.GET.get('column')
 
-    if selected_file:
-        csv_file = CSVFile.objects.get(id=selected_file)
-        df = pd.read_csv(csv_file.file.path)
-        columns = df.columns
-        if selected_column:
-            data = df[selected_column]
+    if article.excel_file:
+        excel_file = article.excel_file
+        file_path = excel_file.file.path
+        if file_path.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file_path)
+            columns = df.columns
+            if selected_column:
+                data = df[selected_column]
+            else:
+                data = df[columns[0]]
         else:
-            data = df[columns[0]]
+            columns = []
+            data = []
     else:
         columns = []
         data = []
@@ -41,35 +44,34 @@ def article(request, id):
     context = {
         'article': article,
         'categories': categories,
-        'csv_files': csv_files,
         'columns': columns,
-        'selected_file': selected_file,
         'selected_column': selected_column,
         'data': data,
     }
     return render(request, 'blog/article.html', context)
 
-def plot_graph(request):
-    selected_file = request.GET.get('file')
+def plot_graph(request, id):
+    article = get_object_or_404(Article, id=id)
     selected_column = request.GET.get('column')
 
-    if selected_file and selected_column:
-        csv_file = CSVFile.objects.get(id=selected_file)
-        df = pd.read_csv(csv_file.file.path)
-        data = df[selected_column]
+    if article.excel_file and selected_column:
+        excel_file = article.excel_file
+        file_path = excel_file.file.path
+        if file_path.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file_path)
+            data = df[selected_column]
 
-        fig, ax = plt.subplots()
-        data.plot(ax=ax)
-        ax.set_title(f'{selected_column} Data')
-        ax.set_xlabel('Index')
-        ax.set_ylabel(selected_column)
+            fig, ax = plt.subplots()
+            data.plot(ax=ax)
+            ax.set_title(f'{selected_column} Data')
+            ax.set_xlabel('Index')
+            ax.set_ylabel(selected_column)
 
-        canvas = FigureCanvas(fig)
-        response = HttpResponse(content_type='image/png')
-        canvas.print_png(response)
-        return response
-    else:
-        return HttpResponse(status=400)
+            canvas = FigureCanvas(fig)
+            response = HttpResponse(content_type='image/png')
+            canvas.print_png(response)
+            return response
+    return HttpResponse(status=400)
 
 def category(request, id):
     category = Category.objects.get(id=id)
