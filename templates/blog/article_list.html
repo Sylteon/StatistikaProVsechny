@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% extends 'blog/base.html' %}
+{% block body_block %} 
+
+<!-- TO DO: Don't display on id but on slug > add slugs -->
+    {% if category %}
+        <h1>Articles for Category: {{ category.name }}</h1>
+    {% endif %}
+    
+    <ul>
+        {% for article in articles %}
+            <li>
+                <h3>{{ article.title }}</h3>
+                <p>{{ article.content|striptags|truncatewords:30 }}</p>
+                <a href="{% url 'blog:article' article.id %}">Read more</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
