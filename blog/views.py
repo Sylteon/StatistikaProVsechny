@@ -78,9 +78,9 @@ def plot_graph(request, id):
 
                 fig, ax = plt.subplots()
                 data.plot(ax=ax)
-                ax.set_title(f'Row {selected_row} Data')
+                ax.set_title(selected_row)
                 ax.set_xlabel('Column')
-                ax.set_ylabel('Value')
+                ax.set_ylabel('Cena')
 
                 # Add labels from the DataFrame
                 ax.set_xticks(range(len(data)))
