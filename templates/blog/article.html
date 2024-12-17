@@ -7,17 +7,17 @@
     <h2>Graph</h2>
     {% if article.excel_file %}
         <form method="get" action="">
-            <label for="column">Select Column:</label>
-            <select name="column" id="column" onchange="this.form.submit()">
-                <option value="">Select a column</option>
-                {% for column in columns %}
-                    <option value="{{ column }}" {% if column == selected_column %}selected{% endif %}>{{ column }}</option>
+            <label for="row">Select Row:</label>
+            <select name="row" id="row" onchange="this.form.submit()">
+                <option value="">Select a row</option>
+                {% for row in rows %}
+                    <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
                 {% endfor %}
             </select>
         </form>
 
-        {% if selected_column %}
-            <img src="{% url 'blog:plot_graph' article.id %}?column={{ selected_column }}" alt="Graph">
+        {% if selected_row %}
+            <img src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
         {% endif %}
     {% else %}
         <p>No Excel file associated with this article.</p>

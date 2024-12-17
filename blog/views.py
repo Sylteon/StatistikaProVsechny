@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')  # Use the Agg backend for non-GUI rendering
+
 from django.shortcuts import render, get_object_or_404
 from blog.models import Article, Category, ExcelFile
 import pandas as pd
@@ -5,9 +8,6 @@ import matplotlib.pyplot as plt
 from django.http import HttpResponse
 from io import BytesIO
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
-
-# Create your views here.
 
 def index(request):
     category_id = request.GET.get('category')
@@ -22,55 +22,76 @@ def index(request):
 def article(request, id):
     article = get_object_or_404(Article, id=id)
     categories = Category.objects.all()
-    selected_column = request.GET.get('column')
+    selected_row = request.GET.get('row')
 
     if article.excel_file:
         excel_file = article.excel_file
         file_path = excel_file.file.path
         if file_path.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_path)
-            columns = df.columns
-            if selected_column:
-                data = df[selected_column]
+            df = pd.read_excel(file_path, engine='openpyxl')
+            df = df.replace('.', 0)  # Replace '.' with 0
+            df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
+            df.columns = df.iloc[0]  # Set the first row as the column labels
+            df = df[1:]  # Remove the first row from the data
+            rows = df.index.tolist()
+            if selected_row and selected_row in rows:
+                data = df.loc[selected_row]
+            elif rows:
+                selected_row = rows[0]
+                data = df.loc[selected_row]
             else:
-                data = df[columns[0]]
+                data = []
         else:
-            columns = []
+            rows = []
             data = []
     else:
-        columns = []
+        rows = []
         data = []
 
     context = {
         'article': article,
         'categories': categories,
-        'columns': columns,
-        'selected_column': selected_column,
+        'rows': rows,
+        'selected_row': selected_row,
         'data': data,
     }
     return render(request, 'blog/article.html', context)
 
 def plot_graph(request, id):
     article = get_object_or_404(Article, id=id)
-    selected_column = request.GET.get('column')
+    selected_row = request.GET.get('row')
 
-    if article.excel_file and selected_column:
+    if article.excel_file and selected_row:
         excel_file = article.excel_file
         file_path = excel_file.file.path
         if file_path.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_path)
-            data = df[selected_column]
+            df = pd.read_excel(file_path, engine='openpyxl')
+            df = df.replace('.', 0)  # Replace '.' with 0
+            df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
+            df.columns = df.iloc[0]  # Set the first row as the column labels
+            df = df[1:]  # Remove the first row from the data
+            df = df.iloc[:, 1:]  # Remove the first column from the data
+            if selected_row in df.index:
+                data = df.loc[selected_row]
+                print(f"Plotting data for row: {selected_row}")
+                print(data.head())
 
-            fig, ax = plt.subplots()
-            data.plot(ax=ax)
-            ax.set_title(f'{selected_column} Data')
-            ax.set_xlabel('Index')
-            ax.set_ylabel(selected_column)
+                fig, ax = plt.subplots()
+                data.plot(ax=ax)
+                ax.set_title(f'Row {selected_row} Data')
+                ax.set_xlabel('Column')
+                ax.set_ylabel('Value')
 
-            canvas = FigureCanvas(fig)
-            response = HttpResponse(content_type='image/png')
-            canvas.print_png(response)
-            return response
+                # Add labels from the DataFrame
+                ax.set_xticks(range(len(data)))
+                ax.set_xticklabels(data.index, rotation=45, ha='right')
+
+                canvas = FigureCanvas(fig)
+                response = HttpResponse(content_type='image/png')
+                canvas.print_png(response)
+                return response
+            else:
+                print(f"Row {selected_row} not found in the DataFrame")
     return HttpResponse(status=400)
 
 def category(request, id):
