@@ -19,6 +19,12 @@ def index(request):
         articles = Article.objects.all()
     return render(request, 'blog/index.html', {'articles': articles, 'categories': categories, 'category_id': category_id})
 
+def read_and_process_excel(file_path):
+    df = pd.read_excel(file_path, engine='openpyxl')
+    df = df.replace('.', "")  # Replace '.' with 0
+    df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
+    return df
+
 def article(request, id):
     article = get_object_or_404(Article, id=id)
     categories = Category.objects.all()
@@ -28,11 +34,7 @@ def article(request, id):
         excel_file = article.excel_file
         file_path = excel_file.file.path
         if file_path.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_path, engine='openpyxl')
-            df = df.replace('.', 0)  # Replace '.' with 0
-            df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
-            df.columns = df.iloc[0]  # Set the first row as the column labels
-            df = df[1:]  # Remove the first row from the data
+            df = read_and_process_excel(file_path)
             rows = df.index.tolist()
             if selected_row and selected_row in rows:
                 data = df.loc[selected_row]
@@ -65,22 +67,19 @@ def plot_graph(request, id):
         excel_file = article.excel_file
         file_path = excel_file.file.path
         if file_path.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_path, engine='openpyxl')
-            df = df.replace('.', 0)  # Replace '.' with 0
-            df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
-            df.columns = df.iloc[0]  # Set the first row as the column labels
-            df = df[1:]  # Remove the first row from the data
-            df = df.iloc[:, 1:]  # Remove the first column from the data
+            df = read_and_process_excel(file_path)
             if selected_row in df.index:
                 data = df.loc[selected_row]
                 print(f"Plotting data for row: {selected_row}")
                 print(data.head())
 
                 fig, ax = plt.subplots()
-                data.plot(ax=ax)
-                ax.set_title(selected_row)
+                data.plot(ax=ax)  # Use line plot for better visualization
+
+                #TODO: Put variables instead of hard-coded values depending on the table
+                ax.set_title(f'Row {selected_row} Data')
                 ax.set_xlabel('Column')
-                ax.set_ylabel('Cena')
+                ax.set_ylabel('Value')
 
                 # Add labels from the DataFrame
                 ax.set_xticks(range(len(data)))
