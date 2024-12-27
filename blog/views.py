@@ -74,7 +74,11 @@ def plot_graph(request, id):
                 print(data.head())
 
                 fig, ax = plt.subplots()
-                data.plot(ax=ax)  # Use line plot for better visualization
+                # Check if the first row contains numeric values
+                if pd.to_numeric(data.index, errors='coerce').notnull().all():
+                    data.plot(ax=ax)  # Use line plot if all values are numeric                 
+                else:
+                    data.plot(kind='bar', ax=ax)  # Use bar chart if any value is non-numeric
 
                 #TODO: Put variables instead of hard-coded values depending on the table
                 ax.set_title(f'Row {selected_row} Data')

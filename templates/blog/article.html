@@ -23,6 +23,7 @@
     {% else %}
         <p>No Excel file associated with this article.</p>
     {% endif %}
+
     <script>
         function updateGraph() {
             const row = document.getElementById('row').value;
@@ -31,9 +32,7 @@
             const url = `{% url 'blog:plot_graph' article.id %}?row=${row}`;
 
             fetch(url)
-                
                 .then(response => {
-                    console.log('Response:', response);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
@@ -46,7 +45,6 @@
                     img.id = 'graphImage';
                     graphContainer.innerHTML = '';
                     graphContainer.appendChild(img);
-                    console.log('Graph updated');
                     scrollToGraph();
                 })
                 .catch(error => console.error('Error fetching graph:', error));
