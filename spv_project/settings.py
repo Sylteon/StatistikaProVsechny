@@ -26,6 +26,9 @@ SECRET_KEY = 'django-insecure-iyvg@sn@g5k149vmw&esyi)2@!x&(hlqxrbe1f&$zm*j-3i#%-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+#TODO: Add your Azure API keys here as a list
+AZURE_API_KEY = '5XO04STGQ5KyF8tbWadtO1aomv75QrIG'
+
 ALLOWED_HOSTS = []
 
 

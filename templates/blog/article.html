@@ -3,26 +3,41 @@
     <h1>{{ article.title }}</h1>
     <div>{{ article.content|safe }}</div>
 
-    <h2>Graph</h2>
-    {% if article.excel_file %}
-        <form id="rowForm">
-            <label for="row">Select Row:</label>
-            <select name="row" id="row" onchange="updateGraph()">
-                <option value="">Select a row</option>
-                {% for row in rows %}
-                    <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
-                {% endfor %}
-            </select>
-        </form>
+<h2>Graph</h2>
+<form method="POST" action="{% url 'blog:check_row_and_years' %}">
+    {% csrf_token %}
+    <input type="hidden" name="article_id" value="{{ article.id }}">
+    
+    <label for="text">Text:</label>
+    <input type="text" id="text" name="text" required>
+    
+    <label for="start_year">Start Year:</label>
+    <input type="number" id="start_year" name="start_year" required>
+    
+    <label for="end_year">End Year:</label>
+    <input type="number" id="end_year" name="end_year" required>
+    
+    <button type="submit">Submit</button>
+</form>
+{% if article.excel_file %}
+    <form id="rowForm">
+        <label for="row">Select Row:</label>
+        <select name="row" id="row" onchange="updateGraph()">
+            <option value="">Select a row</option>
+            {% for row in rows %}
+                <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
+            {% endfor %}
+        </select>
+    </form>
 
-        <div id="graphContainer">
-            {% if selected_row %}
-                <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
-            {% endif %}
-        </div>
-    {% else %}
-        <p>No Excel file associated with this article.</p>
-    {% endif %}
+    <div id="graphContainer">
+        {% if selected_row %}
+            <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
+        {% endif %}
+    </div>
+{% else %}
+    <p>No Excel file associated with this article.</p>
+{% endif %}
 
     <script>
         function updateGraph() {

@@ -1,13 +1,16 @@
 import matplotlib
 matplotlib.use('Agg')  # Use the Agg backend for non-GUI rendering
 
-from django.shortcuts import render, get_object_or_404
 from blog.models import Article, Category, ExcelFile
 import pandas as pd
 import matplotlib.pyplot as plt
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from io import BytesIO
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from django.shortcuts import render, get_object_or_404
+import requests
+from django.conf import settings
+from .models import ApiEndpoint
 
 def index(request):
     category_id = request.GET.get('category')
@@ -19,11 +22,65 @@ def index(request):
         articles = Article.objects.all()
     return render(request, 'blog/index.html', {'articles': articles, 'categories': categories, 'category_id': category_id})
 
+def check_row_and_years(request):
+    if request.method == 'POST':
+        text = request.POST.get('text')
+        start_year = int(request.POST.get('start_year'))
+        end_year = int(request.POST.get('end_year'))
+        article_id = request.POST.get('article_id')
+
+        if not text or not start_year or not end_year or not article_id:
+            return JsonResponse({'error': 'Missing required parameters'}, status=400)
+
+        article = get_object_or_404(Article, id=article_id)
+        if not article.excel_file:
+            return JsonResponse({'error': 'No Excel file associated with this article'}, status=400)
+
+        file_path = article.excel_file.file.path
+
+        df = read_and_process_excel(file_path)
+        if text in df.index:
+            years = df.columns.astype(int)
+            if any(year in range(start_year, end_year + 1) for year in years):
+                return JsonResponse({'error': 'Year range includes years from the data'}, status=400)
+            else:
+                # Create JSON request for Azure endpoint
+                input_data = {
+                    "Inputs": {
+                        "input1": [
+                            {"Typ": text, "rok": year} for year in range(start_year, end_year + 1)
+                        ]
+                    },
+                    "GlobalParameters": {}
+                }
+
+                # Retrieve the API URL and hashed API key from the database
+                api_endpoint = get_object_or_404(ApiEndpoint, article=article)
+                azure_endpoint_url = api_endpoint.url
+                api_key = settings.AZURE_API_KEY  # Assuming you have a way to retrieve the raw API key
+
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': f'Bearer {api_key}'
+                }
+
+                response = requests.post(azure_endpoint_url, json=input_data, headers=headers)
+
+                if response.status_code == 200:
+                    return JsonResponse({'message': 'Request successful', 'response': response.json()})
+                else:
+                    return JsonResponse({'error': 'Request failed', 'status_code': response.status_code, 'response': response.text}, status=response.status_code)
+        else:
+            return JsonResponse({'error': 'Row name not found'}, status=404)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 def read_and_process_excel(file_path):
     df = pd.read_excel(file_path, engine='openpyxl')
     df = df.replace('.', "")  # Replace '.' with 0
     df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
     return df
+
 
 def article(request, id):
     article = get_object_or_404(Article, id=id)
