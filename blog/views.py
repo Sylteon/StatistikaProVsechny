@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')  # Use the Agg backend for non-GUI rendering
 
-from blog.models import Article, Category, ExcelFile
+from blog.models import Article, Category, ExcelFile, ApiEndpoint
 import pandas as pd
 import matplotlib.pyplot as plt
 from django.http import HttpResponse, JsonResponse
@@ -10,7 +10,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from django.shortcuts import render, get_object_or_404
 import requests
 from django.conf import settings
-from .models import ApiEndpoint
+import json
+import random
 
 def index(request):
     category_id = request.GET.get('category')
@@ -67,20 +68,50 @@ def check_row_and_years(request):
                 response = requests.post(azure_endpoint_url, json=input_data, headers=headers)
 
                 if response.status_code == 200:
-                    return JsonResponse({'message': 'Request successful', 'response': response.json()})
+                    response_data = response.json()
+                    results = response_data['Results']['WebServiceOutput0']
+
+                    # Print the JSON response to the command line
+                    print(json.dumps(response_data, indent=4))
+
+                    # Extract values for the plot and randomize the Scored Labels
+                    x_values = [result['rok'] for result in results]
+                    y_values = [result['Scored Labels'] * random.uniform(0.7, 1.3) for result in results]
+                    plot_title = results[0]['Typ']
+
+                    # Generate the plot
+                    fig, ax = plt.subplots()
+                    ax.plot(x_values, y_values)
+                    ax.set_title(plot_title)
+                    ax.set_xlabel('Year')
+                    ax.set_ylabel('Scored Labels')
+
+                    # Set x-axis ticks to the exact years
+                    ax.set_xticks(x_values)
+                    ax.set_xticklabels([str(year) for year in x_values])
+
+                    # Tilt x-axis labels
+                    plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+
+                    # Format y-axis labels to remove decimal values
+                    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x):,}'))
+
+                    # Save the plot to a BytesIO object
+                    buf = BytesIO()
+                    canvas = FigureCanvas(fig)
+                    canvas.print_png(buf)
+                    buf.seek(0)
+
+                    # Return the plot as an image
+                    return HttpResponse(buf, content_type='image/png')
                 else:
                     return JsonResponse({'error': 'Request failed', 'status_code': response.status_code, 'response': response.text}, status=response.status_code)
-        else:
-            return JsonResponse({'error': 'Row name not found'}, status=404)
-
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def read_and_process_excel(file_path):
     df = pd.read_excel(file_path, engine='openpyxl')
     df = df.replace('.', "")  # Replace '.' with 0
     df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
     return df
-
 
 def article(request, id):
     article = get_object_or_404(Article, id=id)
