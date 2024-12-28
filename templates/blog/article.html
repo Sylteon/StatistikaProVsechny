@@ -1,51 +1,65 @@
-<!DOCTYPE html>
 {% extends 'blog/base.html' %}
-{% block body_block %}
+{% block content %}
     <h1>{{ article.title }}</h1>
     <div>{{ article.content|safe }}</div>
 
     <h2>Graph</h2>
-    <form id="graphForm" method="POST" action="{% url 'blog:check_row_and_years' %}">
-        {% csrf_token %}
-        <input type="hidden" name="article_id" value="{{ article.id }}">
-        
-        <label for="text">Text:</label>
-        <input type="text" id="text" name="text" required>
-        
-        <label for="start_year">Start Year:</label>
-        <input type="number" id="start_year" name="start_year" required>
-        
-        <label for="end_year">End Year:</label>
-        <input type="number" id="end_year" name="end_year" required>
-        
-        <button type="submit">Submit</button>
-    </form>
-    <div id="graphContainer">
-        {% if file_url %}
-            <h3>Generated Graph</h3>
-            <img src="{{ file_url }}" alt="Generated Graph">
-        {% endif %}
-    </div>
 
     {% if article.excel_file %}
-        <form id="rowForm">
-            <label for="row">Select Row:</label>
-            <select name="row" id="row" onchange="updateGraph()">
-                <option value="">Select a row</option>
-                {% for row in rows %}
-                    <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
-                {% endfor %}
-            </select>
-        </form>
-
-        <div id="graphContainer">
-            {% if selected_row %}
-                <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
-            {% endif %}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <form id="rowForm">
+                <label for="row">Select Row:</label>
+                <select name="row" id="row" onchange="updateGraph()" class="form-control">
+                    <option value="">Select a row</option>
+                    {% for row in rows %}
+                        <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
+        <div class="col-md-6">
+            <form id="graphForm" method="POST" action="{% url 'blog:check_row_and_years' %}">
+                {% csrf_token %}
+                <input type="hidden" name="article_id" value="{{ article.id }}">
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="start_year">Start Year:</label>
+                        <input type="number" id="start_year" name="start_year" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="end_year">End Year:</label>
+                        <input type="number" id="end_year" name="end_year" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="text">Text:</label>
+                        <input type="text" id="text" name="text" class="form-control" required>
+                    </div>                    
+                    <div class="form-group col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Generate Graph</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     {% else %}
         <p>No Excel file associated with this article.</p>
     {% endif %}
+
+    <div class="row mt-4">
+        <div id="initialGraphContainer" class="col-md-6 text-center">
+            {% if selected_row %}
+                <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph" class="img-fluid">
+            {% endif %}
+        </div>
+        <div id="additionalGraphsContainer" class="col-md-6 text-center">
+            <!-- Additional graphs will be appended here -->
+        </div>
+    </div>
 
     <script>
         document.getElementById('graphForm').addEventListener('submit', function(event) {
@@ -61,12 +75,20 @@
             .then(response => response.json())
             .then(data => {
                 if (data.file_url) {
-                    const graphContainer = document.getElementById('graphContainer');
-                    graphContainer.innerHTML = `
-                        <h3>Generated Graph</h3>
-                        <img src="${data.file_url}" alt="Generated Graph">
+                    const additionalGraphsContainer = document.getElementById('additionalGraphsContainer');
+                    additionalGraphsContainer.innerHTML = ''; // Clear previous graphs
+                    const newGraphDiv = document.createElement('div');
+                    newGraphDiv.className = 'mb-4 text-center';
+                    newGraphDiv.innerHTML = `
+                        <img src="${data.file_url}" alt="Generated Graph" class="img-fluid w-100">
                     `;
+                    additionalGraphsContainer.appendChild(newGraphDiv);
                     console.log('Graph URL:', data.file_url); // Debugging step
+
+                    // Slide the initial graph to the side
+                    document.getElementById('initialGraphContainer').classList.add('col-md-6');
+                    document.getElementById('initialGraphContainer').classList.remove('text-center');
+                    additionalGraphsContainer.classList.add('col-md-6');
                 } else {
                     alert('Error generating graph');
                 }
@@ -80,7 +102,7 @@
             if (row) {
                 graphImage.src = `{% url 'blog:plot_graph' article.id %}?row=${row}`;
                 graphImage.style.display = 'block';
-                document.getElementById('graphContainer').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('initialGraphContainer').scrollIntoView({ behavior: 'smooth' });
             } else {
                 graphImage.style.display = 'none';
             }

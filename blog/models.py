@@ -28,7 +28,8 @@ class ExcelFile(models.Model):
         return self.name
 
 class Article(models.Model):
-    title = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=100, unique=True)
+    perex = models.TextField(max_length=255, null=True, blank=True)
     content = models.TextField()
     tags = models.ManyToManyField(Tag)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)

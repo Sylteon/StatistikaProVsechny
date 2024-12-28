@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 {% extends 'blog/base.html' %}
-{% block body_block %} 
+{% block content %} 
 
 <!-- TO DO: Don't display on id but on slug > add slugs -->
     {% if category %}
-        <h1>Articles for Category: {{ category.name }}</h1>
+        <h1 class="my-4">Articles for Category: {{ category.name }}</h1>
     {% endif %}
     
-    <ul>
+    <div class="row">
         {% for article in articles %}
-            <li>
-                <h3>{{ article.title }}</h3>
-                <p>{{ article.content|striptags|truncatewords:30 }}</p>
-                <a href="{% url 'blog:article' article.id %}">Read more</a>
-            </li>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">{{ article.title }}</h3>
+                    <p class="card-text">{{ article.perex|striptags }}</p>
+                    <a href="{% url 'blog:article' article.id %}" class="btn btn-primary">Read more</a>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}

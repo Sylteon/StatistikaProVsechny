@@ -126,8 +126,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_DIR = BASE_DIR / 'static'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -135,6 +137,6 @@ STATIC_DIR = BASE_DIR / 'static'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Session settings
-SESSION_COOKIE_AGE = 50 # 8 hours, in seconds
+SESSION_COOKIE_AGE = 7200 # 2 hours, in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # If True, the session will expire when the user closes their browser
 SESSION_SAVE_EVERY_REQUEST = False  # If True, the session will be saved to the database on every request
