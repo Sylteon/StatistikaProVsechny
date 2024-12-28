@@ -2,8 +2,15 @@
 {% block content %}
     <h1>{{ article.title }}</h1>
     <div>{{ article.content|safe }}</div>
+    <p><b>Category: </b>{{ article.category }}</p>
+    <p><b>Measurement Unit: </b>{{article.measurement_unit}}</p>
+    <p><b>Tags: </b>
+        {% for tag in article.tags.all %}
+            <span class="badge badge-primary">{{ tag.name }}</span>
+        {% endfor %}
+    </p>
 
-    <h2>Graph</h2>
+    <hr class="my-4" style="border-top: 3px solid #000;">
 
     {% if article.excel_file %}
     <div class="row mt-4">

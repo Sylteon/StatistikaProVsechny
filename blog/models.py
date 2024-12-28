@@ -29,10 +29,11 @@ class ExcelFile(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=100, unique=True)
-    perex = models.TextField(max_length=255, null=True, blank=True)
+    perex = models.TextField(max_length=255,default='')
     content = models.TextField()
     tags = models.ManyToManyField(Tag)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    measurement_unit = models.CharField(max_length=50, default='Number')
     excel_file = models.OneToOneField(ExcelFile, on_delete=models.CASCADE, null=True, blank=True)
     api_endpoint = models.OneToOneField(ApiEndpoint, on_delete=models.CASCADE, null=True, blank=True)
 

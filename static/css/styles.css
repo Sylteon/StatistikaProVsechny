@@ -5,18 +5,27 @@ body {
 
 .navbar {
     background-color: #000080;
+    padding: 1.5rem 1rem; /* Increase padding for a bigger header */
 }
 
 .navbar .nav-link {
-    color: #FFFFFF;
+    color: #FFFFFF !important;
+    font-size: 1.25rem; /* Increase font size for nav links */
+}
+
+.navbar .navbar-brand {
+    color: #FFFFFF !important;
+    font-size: 1.5rem; /* Increase font size for brand */
 }
 
 .footer {
     background-color: #000080;
+    padding: 1.5rem 1rem; /* Increase padding for a bigger footer */
 }
 
 .footer .text-white {
     color: #FFFFFF;
+    font-size: 1.25rem; /* Increase font size for footer text */
 }
 
 .card {
@@ -35,4 +44,9 @@ body {
 .btn-primary:hover {
     background-color: #000066;
     border-color: #000066;
+}
+
+.badge-primary {
+    background-color: #000080;
+    color: #FFFFFF;
 }

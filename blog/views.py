@@ -79,12 +79,14 @@ def check_row_and_years(request):
                     y_values = [result['Scored Labels'] * random.uniform(0.85, 1.05) for result in results]
                     plot_title = results[0]['Typ']
 
+                    navy_blue = '#000080' # Define the navy blue color
+                    line_width = 2.5 # Set the line width for the plot
+
                     # Generate the plot
                     fig, ax = plt.subplots()
-                    ax.plot(x_values, y_values)
+                    ax.plot(x_values, y_values, color=navy_blue, linewidth=line_width)
                     ax.set_title(plot_title)
-                    ax.set_xlabel('Year')
-                    ax.set_ylabel('Scored Labels')
+                    ax.set_ylabel(f'{article.measurement_unit}')
 
                     # Set x-axis ticks to the exact years
                     ax.set_xticks(x_values)
@@ -95,6 +97,9 @@ def check_row_and_years(request):
 
                     # Format y-axis labels to remove decimal values
                     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x):,}'))
+
+                    # Add grid lines
+                    ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='lightgrey')
 
                     # Adjust layout to include all text
                     plt.tight_layout()
@@ -188,23 +193,26 @@ def plot_graph(request, id):
                 print(f"Plotting data for row: {selected_row}")
                 print(data.head())
 
+                navy_blue = '#000080' # Define the navy blue color
+                line_width = 2.5 # Set the line width for the plot
+
                 fig, ax = plt.subplots()
                 # Check if the first row contains numeric values
                 if pd.to_numeric(data.index, errors='coerce').notnull().all():
-                    data.plot(ax=ax)  # Use line plot if all values are numeric                 
+                    data.plot(ax=ax, color=navy_blue, linewidth=line_width)  # Use line plot if all values are numeric                 
                 else:
-                    data.plot(kind='bar', ax=ax)  # Use bar chart if any value is non-numeric
+                    data.plot(kind='bar', ax=ax, color=navy_blue, linewidth=line_width)  # Use bar chart if any value is non-numeric
 
-                #TODO: Put variables instead of hard-coded values depending on the table
-                ax.set_title(f'Row {selected_row} Data')
-                ax.set_xlabel('Column')
-                ax.set_ylabel('Value')
+                ax.set_title(f"{selected_row}")
+                ax.set_ylabel(F'{article.measurement_unit}')
 
                 # Add labels from the DataFrame
                 ax.set_xticks(range(len(data)))
                 ax.set_xticklabels(data.index, rotation=45, ha='right')
 
-                 # Adjust layout to include all text
+                ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='lightgrey')
+
+                # Adjust layout to include all text
                 plt.tight_layout()
 
                 canvas = FigureCanvas(fig)
