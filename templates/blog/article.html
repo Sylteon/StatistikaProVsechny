@@ -1,73 +1,89 @@
+<!DOCTYPE html>
 {% extends 'blog/base.html' %}
 {% block body_block %}
     <h1>{{ article.title }}</h1>
     <div>{{ article.content|safe }}</div>
 
-<h2>Graph</h2>
-<form method="POST" action="{% url 'blog:check_row_and_years' %}">
-    {% csrf_token %}
-    <input type="hidden" name="article_id" value="{{ article.id }}">
-    
-    <label for="text">Text:</label>
-    <input type="text" id="text" name="text" required>
-    
-    <label for="start_year">Start Year:</label>
-    <input type="number" id="start_year" name="start_year" required>
-    
-    <label for="end_year">End Year:</label>
-    <input type="number" id="end_year" name="end_year" required>
-    
-    <button type="submit">Submit</button>
-</form>
-{% if article.excel_file %}
-    <form id="rowForm">
-        <label for="row">Select Row:</label>
-        <select name="row" id="row" onchange="updateGraph()">
-            <option value="">Select a row</option>
-            {% for row in rows %}
-                <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
-            {% endfor %}
-        </select>
+    <h2>Graph</h2>
+    <form id="graphForm" method="POST" action="{% url 'blog:check_row_and_years' %}">
+        {% csrf_token %}
+        <input type="hidden" name="article_id" value="{{ article.id }}">
+        
+        <label for="text">Text:</label>
+        <input type="text" id="text" name="text" required>
+        
+        <label for="start_year">Start Year:</label>
+        <input type="number" id="start_year" name="start_year" required>
+        
+        <label for="end_year">End Year:</label>
+        <input type="number" id="end_year" name="end_year" required>
+        
+        <button type="submit">Submit</button>
     </form>
-
     <div id="graphContainer">
-        {% if selected_row %}
-            <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
+        {% if file_url %}
+            <h3>Generated Graph</h3>
+            <img src="{{ file_url }}" alt="Generated Graph">
         {% endif %}
     </div>
-{% else %}
-    <p>No Excel file associated with this article.</p>
-{% endif %}
+
+    {% if article.excel_file %}
+        <form id="rowForm">
+            <label for="row">Select Row:</label>
+            <select name="row" id="row" onchange="updateGraph()">
+                <option value="">Select a row</option>
+                {% for row in rows %}
+                    <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <div id="graphContainer">
+            {% if selected_row %}
+                <img id="graphImage" src="{% url 'blog:plot_graph' article.id %}?row={{ selected_row }}" alt="Graph">
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No Excel file associated with this article.</p>
+    {% endif %}
 
     <script>
+        document.getElementById('graphForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.file_url) {
+                    const graphContainer = document.getElementById('graphContainer');
+                    graphContainer.innerHTML = `
+                        <h3>Generated Graph</h3>
+                        <img src="${data.file_url}" alt="Generated Graph">
+                    `;
+                    console.log('Graph URL:', data.file_url); // Debugging step
+                } else {
+                    alert('Error generating graph');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
         function updateGraph() {
             const row = document.getElementById('row').value;
-            const graphContainer = document.getElementById('graphContainer');
-            const articleId = "{{ article.id }}";  // Ensure articleId is correctly set
-            const url = `{% url 'blog:plot_graph' article.id %}?row=${row}`;
-
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    const img = document.createElement('img');
-                    img.src = URL.createObjectURL(blob);
-                    img.alt = 'Graph';
-                    img.id = 'graphImage';
-                    graphContainer.innerHTML = '';
-                    graphContainer.appendChild(img);
-                    scrollToGraph();
-                })
-                .catch(error => console.error('Error fetching graph:', error));
-        }
-
-        function scrollToGraph() {
-            const graphContainer = document.getElementById('graphContainer');
-            graphContainer.scrollIntoView({ behavior: 'smooth' });
+            const graphImage = document.getElementById('graphImage');
+            if (row) {
+                graphImage.src = `{% url 'blog:plot_graph' article.id %}?row=${row}`;
+                graphImage.style.display = 'block';
+                document.getElementById('graphContainer').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                graphImage.style.display = 'none';
+            }
         }
     </script>
 {% endblock %}

@@ -17,6 +17,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / 'templates'
 DATA_ROOT = BASE_DIR / 'data'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -26,10 +29,8 @@ SECRET_KEY = 'django-insecure-iyvg@sn@g5k149vmw&esyi)2@!x&(hlqxrbe1f&$zm*j-3i#%-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#TODO: Add your Azure API keys here as a list
-AZURE_API_KEY = '5XO04STGQ5KyF8tbWadtO1aomv75QrIG'
-
 ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'blog.middleware.DeleteExpiredFilesMiddleware',
 ]
 
 ROOT_URLCONF = 'spv_project.urls'
@@ -131,3 +133,8 @@ STATIC_DIR = BASE_DIR / 'static'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Session settings
+SESSION_COOKIE_AGE = 50 # 8 hours, in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # If True, the session will expire when the user closes their browser
+SESSION_SAVE_EVERY_REQUEST = False  # If True, the session will be saved to the database on every request

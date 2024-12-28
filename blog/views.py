@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')  # Use the Agg backend for non-GUI rendering
 
-from blog.models import Article, Category, ExcelFile, ApiEndpoint
+from blog.models import Article, Category, ApiEndpoint
 import pandas as pd
 import matplotlib.pyplot as plt
 from django.http import HttpResponse, JsonResponse
@@ -12,6 +12,9 @@ import requests
 from django.conf import settings
 import json
 import random
+import os
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 def index(request):
     category_id = request.GET.get('category')
@@ -58,7 +61,7 @@ def check_row_and_years(request):
                 # Retrieve the API URL and hashed API key from the database
                 api_endpoint = get_object_or_404(ApiEndpoint, article=article)
                 azure_endpoint_url = api_endpoint.url
-                api_key = settings.AZURE_API_KEY  # Assuming you have a way to retrieve the raw API key
+                api_key = api_endpoint.api_key  # Retrieve the hashed API key from the database
 
                 headers = {
                     'Content-Type': 'application/json',
@@ -71,12 +74,9 @@ def check_row_and_years(request):
                     response_data = response.json()
                     results = response_data['Results']['WebServiceOutput0']
 
-                    # Print the JSON response to the command line
-                    print(json.dumps(response_data, indent=4))
-
                     # Extract values for the plot and randomize the Scored Labels
                     x_values = [result['rok'] for result in results]
-                    y_values = [result['Scored Labels'] * random.uniform(0.7, 1.3) for result in results]
+                    y_values = [result['Scored Labels'] * random.uniform(0.85, 1.05) for result in results]
                     plot_title = results[0]['Typ']
 
                     # Generate the plot
@@ -96,18 +96,45 @@ def check_row_and_years(request):
                     # Format y-axis labels to remove decimal values
                     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x):,}'))
 
+                    # Adjust layout to include all text
+                    plt.tight_layout()
+
                     # Save the plot to a BytesIO object
                     buf = BytesIO()
                     canvas = FigureCanvas(fig)
                     canvas.print_png(buf)
                     buf.seek(0)
 
-                    # Return the plot as an image
-                    return HttpResponse(buf, content_type='image/png')
+                    # Save the plot as an image in the media folder
+
+                    # Define the file path and name
+                    file_name = f'plot_{article_id}_{text}_{start_year}_{end_year}.png'
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+                    # Save the image to the media folder
+                    with default_storage.open(file_path, 'wb') as f:
+                        f.write(buf.getvalue())
+
+                    # Store the file path in the session
+                    if 'generated_files' not in request.session:
+                        request.session['generated_files'] = []
+                    request.session['generated_files'].append(file_path)
+                    request.session.modified = True
+
+                   # Return the file URL as JSON
+                    file_url = default_storage.url(file_name)
+                    return JsonResponse({'file_url': file_url})
                 else:
                     return JsonResponse({'error': 'Request failed', 'status_code': response.status_code, 'response': response.text}, status=response.status_code)
+        else:
+            return JsonResponse({'error': 'Text not found in the data'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def read_and_process_excel(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"No such file or directory: '{file_path}'")
+    
     df = pd.read_excel(file_path, engine='openpyxl')
     df = df.replace('.', "")  # Replace '.' with 0
     df.set_index(df.columns[0], inplace=True)  # Set the first column as the index
@@ -176,6 +203,9 @@ def plot_graph(request, id):
                 # Add labels from the DataFrame
                 ax.set_xticks(range(len(data)))
                 ax.set_xticklabels(data.index, rotation=45, ha='right')
+
+                 # Adjust layout to include all text
+                plt.tight_layout()
 
                 canvas = FigureCanvas(fig)
                 response = HttpResponse(content_type='image/png')
