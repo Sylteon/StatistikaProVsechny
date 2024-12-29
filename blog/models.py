@@ -1,7 +1,7 @@
 from django.db import models
 
 class ApiEndpoint(models.Model):
-    name = models.CharField(max_length=255, unique=True, default='API Endpoint')
+    name = models.CharField(max_length=255, default='API Endpoint')
     url = models.URLField()
     api_key = models.CharField(max_length=255)
 
