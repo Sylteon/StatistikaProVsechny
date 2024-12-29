@@ -89,7 +89,13 @@ def check_row_and_years(request):
                     ax.set_ylabel(f'{article.measurement_unit}')
 
                     # Set x-axis ticks to the exact years
-                    ax.set_xticks(x_values)
+                    if max(x_values) > 2075:
+                        x_values = x_values[::5]
+                    elif max(x_values) > 2050:
+                        x_values = x_values[::2]  # Show every other year if the max year is greater than 2050
+                    
+                    # Set x-axis ticks to the exact years                    
+                    ax.set_xticks(x_values)                                        
                     ax.set_xticklabels([str(year) for year in x_values])
 
                     # Tilt x-axis labels

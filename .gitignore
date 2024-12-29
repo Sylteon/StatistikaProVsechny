@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Media files
+media/
+media/excel/
 
 # Distribution / packaging
 .Python

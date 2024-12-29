@@ -33,7 +33,7 @@ class Article(models.Model):
     content = models.TextField()
     tags = models.ManyToManyField(Tag)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    measurement_unit = models.CharField(max_length=50, default='Number')
+    measurement_unit = models.CharField(max_length=50, default='Počet')
     excel_file = models.OneToOneField(ExcelFile, on_delete=models.CASCADE, null=True, blank=True)
     api_endpoint = models.OneToOneField(ApiEndpoint, on_delete=models.CASCADE, null=True, blank=True)
 

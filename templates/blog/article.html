@@ -2,9 +2,9 @@
 {% block content %}
     <h1>{{ article.title }}</h1>
     <div>{{ article.content|safe }}</div>
-    <p><b>Category: </b>{{ article.category }}</p>
-    <p><b>Measurement Unit: </b>{{article.measurement_unit}}</p>
-    <p><b>Tags: </b>
+    <p><b>Kategorie: </b>{{ article.category }}</p>
+    <p><b>Měrná Jednotka: </b>{{article.measurement_unit}}</p>
+    <p><b>Štítky: </b>
         {% for tag in article.tags.all %}
             <span class="badge badge-primary">{{ tag.name }}</span>
         {% endfor %}
@@ -16,9 +16,9 @@
     <div class="row mt-4">
         <div class="col-md-6">
             <form id="rowForm">
-                <label for="row">Select Row:</label>
+                <label for="row">Vyber Graf:</label>
                 <select name="row" id="row" onchange="updateGraph()" class="form-control">
-                    <option value="">Select a row</option>
+                    <option value="">Vyber Graf</option>
                     {% for row in rows %}
                         <option value="{{ row }}" {% if row|stringformat:"s" == selected_row %}selected{% endif %}>{{ row }}</option>
                     {% endfor %}
@@ -32,29 +32,30 @@
                 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label for="start_year">Start Year:</label>
-                        <input type="number" id="start_year" name="start_year" class="form-control" required>
+                        <label for="start_year">Počáteční Rok:</label>
+                        <input type="number" id="start_year" name="start_year" class="form-control" min="2023" required>
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="end_year">End Year:</label>
-                        <input type="number" id="end_year" name="end_year" class="form-control" required>
+                        <label for="end_year">Konečný Rok:</label>
+                        <input type="number" id="end_year" name="end_year" class="form-control" max="2100" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label for="text">Text:</label>
+                        <label for="text">Graf:</label>
                         <input type="text" id="text" name="text" class="form-control" required>
                     </div>                    
                     <div class="form-group col-md-6 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Generate Graph</button>
+                        <button type="submit" class="btn btn-primary w-100">Generuj Graf</button>
                     </div>
-                </div>
+                </div>                
+                <p style="color:  darkgray;">Zadejte název grafu, vyplňte počáteční a konečný rok budoucí predikce</p>
             </form>
         </div>
     </div>
     {% else %}
-        <p>No Excel file associated with this article.</p>
+        <p>Žádný Excel soubor není propojen s tímto článkem.</p>
     {% endif %}
 
     <div class="row mt-4">
@@ -69,6 +70,16 @@
     </div>
 
     <script>
+        document.getElementById('start_year').addEventListener('input', function() {
+            var startYear = parseInt(this.value);
+            var endYearInput = document.getElementById('end_year');
+            if (!isNaN(startYear)) {
+                endYearInput.min = startYear + 1;
+            } else {
+                endYearInput.min = '';
+            }
+        });
+        
         document.getElementById('graphForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(this);
