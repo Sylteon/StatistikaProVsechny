@@ -62,4 +62,4 @@ LOGGING = {
     },
 }
 
-STATIC_ROOT = BASE_DIR/'staticfiles'
+STATIC_DIR = BASE_DIR/'staticfiles'
