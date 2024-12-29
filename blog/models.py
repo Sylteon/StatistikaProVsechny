@@ -6,7 +6,7 @@ class ApiEndpoint(models.Model):
     api_key = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"API Endpoint for {self.url}"
+        return self.name
 
 class Tag(models.Model):
     name = models.CharField(max_length=255, unique=True)
