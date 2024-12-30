@@ -147,7 +147,7 @@ SESSION_SAVE_EVERY_REQUEST = False  # If True, the session will be saved to the 
 CORS_ALLOW_ALL_ORIGINS = True
 
 AZURE_ACCOUNT_NAME = 'statistikaprovsechnyweb'
-AZURE_ACCOUNT_KEY = ''
+AZURE_ACCOUNT_KEY = 'a'
 AZURE_CONTAINER = 'media'
 AZURE_CONTAINER_EXCEL= 'excel'
 
