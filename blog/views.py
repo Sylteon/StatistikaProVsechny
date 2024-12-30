@@ -15,6 +15,9 @@ import random
 import os
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from datetime import datetime, timedelta
+
 
 def index(request):
     category_id = request.GET.get('category')
@@ -117,32 +120,47 @@ def check_row_and_years(request):
                     buf.seek(0)
 
                     # Save the plot as an image in the media folder
+                    blob_service_client = BlobServiceClient(account_url=f"https://{settings.AZURE_ACCOUNT_NAME}.blob.core.windows.net", credential=settings.AZURE_ACCOUNT_KEY)
+                    container_name = settings.AZURE_CONTAINER
 
                     # Define the file path and name
                     file_name = f'plot_{article_id}_{text}_{start_year}_{end_year}.png'
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    #file_path = os.path.join(settings.MEDIA_ROOT, file_name)
 
-                    # Save the image to the media folder
-                    with default_storage.open(file_path, 'wb') as f:
-                        f.write(buf.getvalue())
+                    try:
+                        # Create a container if it doesn't exist
+                        container_client = blob_service_client.get_container_client(container_name)
+                        try:
+                            container_client.create_container()
+                        except Exception as e:
+                            # Container already exists
+                            pass
 
-                    # Store the file path in the session
-                    if 'generated_files' not in request.session:
-                        request.session['generated_files'] = []
-                    request.session['generated_files'].append(file_path)
-                    request.session.modified = True
+                        # Upload the file
+                        blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_name)
+                        blob_client.upload_blob(buf, blob_type="BlockBlob", overwrite=True)
 
-                   # Return the file URL as JSON
-                    file_url = default_storage.url(file_name)
-                    return JsonResponse({'file_url': file_url})
-                else:
-                    return JsonResponse({'error': 'Request failed', 'status_code': response.status_code, 'response': response.text}, status=response.status_code)
+                        # Get the file URL
+                        file_url = f"https://{settings.AZURE_CUSTOM_DOMAIN}/{container_name}/{file_name}"
+
+                        # Store the file path in the session
+                        if 'generated_files' not in request.session:
+                            request.session['generated_files'] = []
+                        request.session['generated_files'].append(file_url)
+                        request.session.modified = True
+
+                        # Return the file URL as JSON
+                        return JsonResponse({'file_url': file_url})
+                    except Exception as ex:
+                        print(f"Exception: {ex}")
+                        return JsonResponse({'error': 'Request failed', 'status_code': response.status_code, 'response': response.text}, status=response.status_code)
         else:
             return JsonResponse({'error': 'Text not found in the data'}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def read_and_process_excel(file_path):
+    print(f"Reading Excel file: {file_path}")
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"No such file or directory: '{file_path}'")
     

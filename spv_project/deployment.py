@@ -6,6 +6,7 @@ ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME']]
 CSRF_TRUSTED_ORIGINS = ['https://'+os.environ['WEBSITE_HOSTNAME']]
 DEBUG = False
 SECRET_KEY = os.environ['MY_SECRET_KEY']
+AZURE_ACCOUNT_KEY = os.environ['AZURE_ACCOUNT_KEY']
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -18,9 +19,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-#CORS_ALLOWED_ORIGINS = []
-
 
 STORAGES = {
     "default": {
@@ -63,4 +61,3 @@ LOGGING = {
 }
 
 STATIC_DIR = BASE_DIR/'staticfiles'
-SERVE_MEDIA = True

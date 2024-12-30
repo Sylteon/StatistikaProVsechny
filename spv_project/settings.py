@@ -37,6 +37,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'corsheaders',
+    'storages',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,4 +145,12 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # If True, the session will expire when 
 SESSION_SAVE_EVERY_REQUEST = False  # If True, the session will be saved to the database on every request
 
 CORS_ALLOW_ALL_ORIGINS = True
-SERVE_MEDIA = False
+
+AZURE_ACCOUNT_NAME = 'statistikaprovsechnyweb'
+AZURE_ACCOUNT_KEY = ''
+AZURE_CONTAINER = 'media'
+AZURE_CONTAINER_EXCEL= 'excel'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_CONTAINER}/'
