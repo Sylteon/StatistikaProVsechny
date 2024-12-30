@@ -50,3 +50,14 @@ body {
     background-color: #000080;
     color: #FFFFFF;
 }
+
+.about {
+    font-size: large;
+}
+
+.logo{
+    padding: 5%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

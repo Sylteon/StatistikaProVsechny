@@ -23,6 +23,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'index' %}">Domů</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">O nás</a>
+                    </li>
                   {% for category in categories %}
                       <li class="nav-item">
                           <a class="nav-link" href="{% url 'blog:category' category.id %}">{{ category.name }}</a>

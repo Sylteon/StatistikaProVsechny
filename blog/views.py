@@ -253,3 +253,6 @@ def category(request, id):
     categories = Category.objects.all()
     return render(request, 'blog/article_list.html', context = {'category': category, 'articles': articles, 'categories': categories})
 
+def about(request):
+    categories = Category.objects.all()
+    return render(request, 'blog/about.html', {'categories': categories})

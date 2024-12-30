@@ -24,7 +24,8 @@ class Category(models.Model):
 
 class ExcelFile(models.Model):
     name = models.CharField(max_length=255)
-    file = models.FileField(null=True, upload_to='excel')            
+    file = models.FileField(null=True, upload_to='excel')          
+    csu_url = models.URLField(null=True, blank=True, default='https://vdb.czso.cz/vdbvo2/')  
     def __str__(self):
         return self.name
 

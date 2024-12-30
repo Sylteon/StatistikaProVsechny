@@ -1,0 +1,17 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+{% load static %}
+<div class="container mt-4">
+    <h1>About Us</h1>
+    <p class = "about">Jakožto člověka, který se zajímá o data a jejich zpracování mne již dlouhou dobu trápilo že na webu Českého 
+        statistického úřadu (ČSÚ) jsou pouze data vybraná a mnohdy jen na rok současný či předchozí. A tudíž mne napadlo 
+        vzít meziroční data která jsou volně přístupná a vizualizovat je. To dle mého názoru není věc dostatečná, něco tomuto 
+        nápadu očividně chybělo, napadlo mne tedy implementovat do aplikace také predikce za pomoci strojového učení pro analýzu 
+        budoucích trendů na základě dat z let minulých. Navíc jsem si uvědomil, že kombinace uživatelsky přívětivého rozhraní, zajímavých 
+        vizualizací a predikcí by mohla zvýšit zájem o data z ČSU a podpořit jejich širší využití. Tak vznikla myšlenka na aplikaci 
+        StatistikaProVšechny.
+    </p>
+    <img src="{% static 'images/logo.png' %}" alt="logo Statistika Pro Všechny" class="logo">
+</div>
+{% endblock %}
