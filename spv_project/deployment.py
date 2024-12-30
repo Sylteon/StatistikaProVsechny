@@ -63,3 +63,4 @@ LOGGING = {
 }
 
 STATIC_DIR = BASE_DIR/'staticfiles'
+SERVE_MEDIA = True

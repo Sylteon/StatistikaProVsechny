@@ -144,3 +144,4 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # If True, the session will expire when 
 SESSION_SAVE_EVERY_REQUEST = False  # If True, the session will be saved to the database on every request
 
 CORS_ALLOW_ALL_ORIGINS = True
+SERVE_MEDIA = False
