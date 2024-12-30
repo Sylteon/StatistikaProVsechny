@@ -9,12 +9,14 @@
             <span class="badge badge-primary">{{ tag.name }}</span>
         {% endfor %}
     </p>
+    <p><b>Tabulka na webu ČSU: </b>{{ article.excel_file.csu_url}}</p>
 
     <hr class="my-4" style="border-top: 3px solid #000;">
 
     {% if article.excel_file %}
     <div class="row mt-4">
         <div class="col-md-6">
+            <h3>Graf Srovnání</h3>
             <form id="rowForm">
                 <label for="row">Vyber Graf:</label>
                 <select name="row" id="row" onchange="updateGraph()" class="form-control">
@@ -26,6 +28,7 @@
             </form>
         </div>
         <div class="col-md-6">
+            <h3>Generování Grafu Předpovědi</h3>
             <form id="graphForm" method="POST" action="{% url 'blog:check_row_and_years' %}">
                 {% csrf_token %}
                 <input type="hidden" name="article_id" value="{{ article.id }}">
@@ -50,7 +53,7 @@
                         <button type="submit" class="btn btn-primary w-100">Generuj Graf</button>
                     </div>
                 </div>                
-                <p style="color:  darkgray;">Zadejte název grafu, vyplňte počáteční a konečný rok budoucí predikce </p>
+                <p style="color:  darkgray;">Zadejte název grafu, vyplňte počáteční a konečný rok budoucí předpovědi </p>
             </form>
         </div>
     </div>
