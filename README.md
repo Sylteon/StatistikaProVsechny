@@ -11,7 +11,6 @@ Statistika Pro Všechny je webová aplikace, která poskytuje vizualizaci statis
 - `requirements.txt` Seznam závislostí a balíčků potřebných pro běh projektu. na produkci
 
 ### Adresář `spv_project`
-- `__init__.py`: Inicializační soubor pro Python modul.
 - `asgi.py`: Konfigurační soubor pro ASGI server.
 - `settings.py`: Konfigurační soubor pro Django projekt.
 - `urls.py`: Definice URL tras pro celý projekt.
@@ -19,10 +18,8 @@ Statistika Pro Všechny je webová aplikace, která poskytuje vizualizaci statis
 - `deployment.py`: Konfigurační soubor pro Django projekt na prdukci.
 
 ### Adresář `blog`
-- `__init__.py`: Inicializační soubor pro Python modul.
 - `admin.py`: Konfigurace administrátorského rozhraní pro modely.
 - `apps.py`: Konfigurace aplikace `blog`.
-- `context_processors.py`: Kontextové procesory pro přidání kategorií do všech šablon.
 - `models.py`: Definice databázových modelů pro články, kategorie a soubory Excel.
 - `tests.py`: Testovací soubory pro aplikaci `blog`.
 - `urls.py`: Definice URL tras pro aplikaci `blog`.
@@ -42,8 +39,5 @@ Statistika Pro Všechny je webová aplikace, která poskytuje vizualizaci statis
 - `favicon.png`: Ikona webu.
 - `logo.png`: Logo aplikace.
 
-### Adresář `migrations`
-- `__init__.py`: Inicializační soubor pro Python modul.
-- `0001_initial.py`: První migrace pro vytvoření databázových tabulek.
 
 
